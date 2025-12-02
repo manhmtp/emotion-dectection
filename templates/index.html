@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Emotion Recognition Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b6cee",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        /* Hide overlays by default */
+        .overlay-hidden {
+            display: none !important;
+        }
+        /* Webcam video styling */
+        #webcam-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        /* Image preview styling */
+        #image-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#EAEAEA]">
+<div class="relative flex h-auto min-h-screen w-full flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#232f48] px-6 lg:px-10 py-3 sticky top-0 z-10 bg-background-dark/80 backdrop-blur-sm">
+<div class="flex items-center gap-4">
+<div class="size-6 text-primary">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Emotion Recognition Dashboard</h2>
+</div>
+<div class="flex flex-1 justify-end gap-2 sm:gap-4">
+<div class="flex gap-2">
+<button id="save-result-btn" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Save Result</span>
+</button>
+<button id="share-btn" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-[#232f48] text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<span class="material-symbols-outlined text-white text-xl">share</span>
+</button>
+</div>
+<div id="user-avatar" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAZ2gMeqRvKvisChCLX3ocfEm7IAXC69o5jsahd-McvFzne2qtOV415NOaDlxm6YA-jXY9qCchcRQ_0TPYVoYKaQDUHhq9D9ccBWswHIHBmdDBlMPeiSbAtpBzdsJHF8XkG3vKYwKx6_904xB_zr0RkFJWTO0-a6yyzqAEBGRTCZgayMv4WXpUJLatfgEs28hwjNSKVJgiQJKYQ-pP7KN4Vb0iMSQy2yQGcJSAzCcjhhSqFv0AnmHic5ra1sai3bH-2pHzU3h10aPM");'></div>
+</div>
+</header>
+<main class="flex-grow p-4 lg:p-6">
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-6 h-full">
+<!-- Left Panel: Input Controls -->
+<div class="xl:col-span-3 bg-[#1E1E1E]/40 rounded-xl border border-[#232f48] p-4 flex flex-col gap-4">
+<h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-2">Select Input</h3>
+<div class="flex h-10 flex-1 items-center justify-center rounded-lg bg-[#101622] p-1">
+<label id="tab-upload" class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-[#232f48] has-[:checked]:shadow-[0_0_4px_rgba(0,0,0,0.1)] has-[:checked]:text-white text-[#92a4c9] text-sm font-medium leading-normal">
+<span class="truncate">Upload Image</span>
+<input id="radio-upload" checked="" class="invisible w-0" name="input-mode" type="radio" value="upload"/>
+</label>
+<label id="tab-webcam" class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-[#232f48] has-[:checked]:shadow-[0_0_4px_rgba(0,0,0,0.1)] has-[:checked]:text-white text-[#92a4c9] text-sm font-medium leading-normal">
+<span class="truncate">Live Webcam</span>
+<input id="radio-webcam" class="invisible w-0" name="input-mode" type="radio" value="webcam"/>
+</label>
+</div>
+<!-- Upload Area -->
+<div id="upload-area" class="flex flex-col items-center gap-6 rounded-lg border-2 border-dashed border-[#324467] px-6 py-14 flex-grow justify-center">
+<div class="flex max-w-[480px] flex-col items-center gap-2">
+<p class="text-white text-lg font-bold leading-tight tracking-[-0.015em] max-w-[480px] text-center">Drag &amp; drop an image here</p>
+<p class="text-[#A0A0A0] text-sm font-normal leading-normal max-w-[480px] text-center">
+                                Your image or video feed will appear here. For best results, use a clear, well-lit image.
+                            </p>
+</div>
+<input type="file" id="file-input" accept="image/*" style="display: none;">
+<button id="browse-btn" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#232f48] text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Browse Files</span>
+</button>
+</div>
+<!-- Webcam Area (hidden by default) -->
+<div id="webcam-area" class="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed border-[#324467] px-6 py-14 flex-grow justify-center" style="display: none;">
+<div class="flex max-w-[480px] flex-col items-center gap-2">
+<p class="text-white text-lg font-bold leading-tight tracking-[-0.015em] max-w-[480px] text-center">Webcam Mode</p>
+<p class="text-[#A0A0A0] text-sm font-normal leading-normal max-w-[480px] text-center">
+                                Click "Start Webcam" to capture your emotion in real-time.
+                            </p>
+</div>
+<button id="start-webcam-btn" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#232f48] text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Start Webcam</span>
+</button>
+<button id="stop-webcam-btn" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-red-600 text-white text-sm font-bold leading-normal tracking-[0.015em]" style="display: none;">
+<span class="truncate">Stop Webcam</span>
+</button>
+<button id="capture-btn" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]" style="display: none;">
+<span class="material-symbols-outlined">photo_camera</span>
+<span class="truncate ml-2">Capture Photo</span>
+</button>
+</div>
+<button id="analyze-btn" class="flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] gap-2">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="truncate">Analyze</span>
+</button>
+</div>
+
+<!-- Center Panel: Image/Video Display -->
+<div class="xl:col-span-6 bg-[#1E1E1E]/40 rounded-xl border border-[#232f48] p-4 flex flex-col items-center justify-center min-h-[400px] lg:min-h-[600px] relative">
+<div id="preview-container" class="w-full h-full flex items-center justify-center bg-black/20 rounded-lg relative overflow-hidden">
+<!-- Default State -->
+<div id="default-state" class="text-center">
+<span class="material-symbols-outlined text-6xl text-[#A0A0A0]">image</span>
+<p class="text-white text-lg font-bold leading-tight tracking-[-0.015em] mt-4">Your image or video feed will appear here</p>
+<p class="text-[#A0A0A0] text-sm">Upload an image or start the webcam to begin analysis.</p>
+</div>
+
+<!-- Image Preview -->
+<img id="image-preview" class="overlay-hidden" alt="Uploaded image preview"/>
+
+<!-- Webcam Video -->
+<video id="webcam-video" class="overlay-hidden" autoplay playsinline></video>
+<canvas id="webcam-canvas" style="display: none;"></canvas>
+</div>
+
+<!-- Loading State -->
+<div id="loading-overlay" class="overlay-hidden absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-black/60 backdrop-blur-sm rounded-lg">
+<span class="material-symbols-outlined text-4xl text-primary animate-spin">progress_activity</span>
+<div class="text-center">
+<p class="text-lg font-bold text-white">Analyzing...</p>
+<p class="text-sm text-gray-300">Please wait while we process your image.</p>
+</div>
+</div>
+
+<!-- Error State -->
+<div id="error-overlay" class="overlay-hidden absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-red-900/40 backdrop-blur-sm rounded-lg border border-red-500/50">
+<span class="material-symbols-outlined text-4xl text-red-400">error</span>
+<div class="text-center">
+<p id="error-title" class="text-lg font-bold text-white">No Face Detected</p>
+<p id="error-message" class="text-sm text-red-200">Please try another image with a clear view of a face.</p>
+</div>
+<button id="try-again-btn" class="mt-2 flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-red-500/50 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-500/70">
+<span class="truncate">Try Again</span>
+</button>
+</div>
+</div>
+
+<!-- Right Panel: Results -->
+<div class="xl:col-span-3 bg-[#1E1E1E]/40 rounded-xl border border-[#232f48] p-4 flex flex-col gap-4">
+<h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-2">Analysis Breakdown</h3>
+<div class="flex flex-1 flex-col gap-4 bg-[#101622] rounded-lg p-4">
+<div class="flex justify-between items-center">
+<p class="text-white text-base font-medium leading-normal">Emotion Distribution</p>
+<div class="flex gap-1">
+<button id="pie-chart-btn" class="p-1 rounded-md bg-[#232f48] text-white hover:bg-[#2b6cee] transition-colors"><span class="material-symbols-outlined text-xl">pie_chart</span></button>
+<button id="bar-chart-btn" class="p-1 rounded-md bg-primary text-white"><span class="material-symbols-outlined text-xl">bar_chart</span></button>
+</div>
+</div>
+<p id="dominant-emotion" class="text-white tracking-light text-[32px] font-bold leading-tight truncate">-</p>
+<div class="flex gap-1">
+<p class="text-[#92a4c9] text-base font-normal leading-normal">Dominant Emotion</p>
+<p id="dominant-confidence" class="text-[#28A745] text-base font-medium leading-normal">-</p>
+</div>
+<!-- Bar Chart -->
+<div id="emotion-chart" class="grid min-h-[160px] gap-2 items-end justify-items-center pt-4" style="grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));">
+<!-- Bars will be dynamically updated -->
+</div>
+<!-- Pie Chart (hidden by default) -->
+<div id="emotion-pie-chart" class="min-h-[160px] flex flex-col items-center justify-center gap-3 pt-4" style="display: none;">
+<canvas id="pie-canvas" width="200" height="200"></canvas>
+<div id="pie-legend" class="flex flex-wrap gap-2 justify-center max-w-[220px]">
+<!-- Legend will be dynamically generated -->
+</div>
+</div>
+</div>
+
+<!-- Analysis History -->
+<div class="flex flex-col gap-2 bg-[#101622] rounded-lg p-4">
+<h4 class="text-white text-base font-medium leading-normal">Analysis History</h4>
+<p class="text-sm text-[#A0A0A0] mb-2">Last 5 results</p>
+<ul id="history-list" class="space-y-3">
+<!-- History items will be dynamically added here -->
+<li class="text-center text-[#A0A0A0] text-sm py-4">No analysis history yet</li>
+</ul>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+<!-- Load JavaScript -->
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body></html>
+
